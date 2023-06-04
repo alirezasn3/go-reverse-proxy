@@ -18,7 +18,7 @@ go-reverse-proxy.exe C:/Users/Alireza/config.json
 
 ## Sample config file
 
-```
+```json
 {
   "listen": ":80",
   "proxies": [
@@ -34,8 +34,8 @@ go-reverse-proxy.exe C:/Users/Alireza/config.json
 }
 ```
 
-`listen`: the address you want the reverse proxy to listen on
+`listen` : the address you want the reverse proxy to listen on
 
-`proxies`: array of objects containing listen address and the destination for each proxy
+`proxies` : array of objects containing listen address and the destination for each proxy
 
 You can pass as many proxies as you want to `proxies` array.
