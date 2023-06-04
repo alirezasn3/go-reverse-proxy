@@ -13,7 +13,7 @@ go-reverse-proxy.exe
 Alternatively, you can pass the path to the config file as the first command line argument.
 
 ```
-go-reverse-proxy.exe C:/Users/Alireza/config.json
+go-reverse-proxy.exe C:/Users/Alireza/
 ```
 
 ## Sample config file
