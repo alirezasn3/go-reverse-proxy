@@ -1,38 +1,76 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
+var config Config
+
+type Proxy struct {
+	Listen  string `json:"listen"`
+	Connect string `json:"connect"`
+}
+
+type Config struct {
+	Listen  string  `json:"listen"`
+	Proxies []Proxy `json:"proxies"`
+}
+
+// Load config file
+func init() {
+	// Default config file path is ./config.json
+	configPath := "config.json"
+
+	// Use the first command line argument as config file path if one is provided
+	if len(os.Args) > 1 {
+		configPath = os.Args[1] + configPath
+	}
+
+	// Read config file
+	bytes, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Parse config file into global config variable
+	err = json.Unmarshal(bytes, &config)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
-	backendRemote, err := url.Parse("http://localhost:8080")
-	if err != nil {
-		panic(err)
-	}
-	frontendRemote, err := url.Parse("http://localhost:3000")
-	if err != nil {
-		panic(err)
-	}
-
-	handler := func(p *httputil.ReverseProxy, remote *url.URL) func(http.ResponseWriter, *http.Request) {
-		return func(w http.ResponseWriter, r *http.Request) {
-			log.Println(r.URL)
-			r.Host = remote.Host
-			w.Header().Set("X-Ben", "Rad")
-			p.ServeHTTP(w, r)
+	// Loop over proxies array
+	for _, proxy := range config.Proxies {
+		// Parse the url that the proxy should forward request to
+		connectUrl, err := url.Parse(proxy.Connect)
+		if err != nil {
+			panic(err)
 		}
+
+		// Create reverse proxy from url
+		reverseProxy := httputil.NewSingleHostReverseProxy(connectUrl)
+
+		// Handle requests on the url that the proxy should listen on
+		http.HandleFunc(proxy.Listen, func(w http.ResponseWriter, r *http.Request) {
+			// Log request info
+			log.Printf("[%s] -> [%s]\n", r.URL, proxy.Connect)
+
+			// Change request's host to destination host
+			r.Host = connectUrl.Host
+
+			// Forward request to destination
+			reverseProxy.ServeHTTP(w, r)
+		})
 	}
 
-	backendProxy := httputil.NewSingleHostReverseProxy(backendRemote)
-	frontendProxy := httputil.NewSingleHostReverseProxy(frontendRemote)
-	http.HandleFunc("api.localhost/", handler(backendProxy, backendRemote))
-	http.HandleFunc("localhost/", handler(frontendProxy, frontendRemote))
-
-	err = http.ListenAndServe(":80", nil)
-	if err != nil {
+	// Create http server and listen for requests
+	if err := http.ListenAndServe(config.Listen, nil); err != nil {
 		panic(err)
 	}
 }
