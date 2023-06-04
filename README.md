@@ -1,6 +1,6 @@
 # Simple Reverse Proxy
 
-This is a simple reverse proxy written in golang. Useful When you don't want to setup something like nginx and just want to get up and running in dev inviroment.
+This is a simple reverse proxy written in golang. Useful When you don't want to setup something like nginx and just want to get up and running in a dev environment.
 
 ## How to use
 
