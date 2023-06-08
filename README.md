@@ -10,7 +10,7 @@ Create a `config.json` file in the same folder as the program.
 go-reverse-proxy.exe
 ```
 
-Alternatively, you can pass the path to the config file as the first command line argument.
+Alternatively, you can pass the path to the config file directory as the first command line argument.
 
 ```
 go-reverse-proxy.exe C:/Users/Alireza/
