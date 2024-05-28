@@ -56,10 +56,12 @@ func main() {
 		// Create reverse proxy from url
 		reverseProxy := httputil.NewSingleHostReverseProxy(connectUrl)
 
+		log.Println(proxy.Listen, proxy.Connect)
+
 		// Handle requests on the url that the proxy should listen on
 		http.HandleFunc(proxy.Listen, func(w http.ResponseWriter, r *http.Request) {
 			// Log request info
-			log.Printf("[%s] -> [%s]\n", r.URL, proxy.Connect)
+			log.Printf("[%s%s] -> [%s]\n", r.Host, r.URL, proxy.Connect)
 
 			// Change request's host to destination host
 			r.Host = connectUrl.Host
