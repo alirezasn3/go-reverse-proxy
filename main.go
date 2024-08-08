@@ -47,28 +47,24 @@ func init() {
 func main() {
 	// Loop over proxies array
 	for _, proxy := range config.Proxies {
-		// Parse the url that the proxy should forward request to
-		connectUrl, err := url.Parse(proxy.Connect)
-		if err != nil {
-			panic(err)
-		}
-
-		// Create reverse proxy from url
-		reverseProxy := httputil.NewSingleHostReverseProxy(connectUrl)
-
-		log.Println(proxy.Listen, proxy.Connect)
-
-		// Handle requests on the url that the proxy should listen on
-		http.HandleFunc(proxy.Listen, func(w http.ResponseWriter, r *http.Request) {
-			// Log request info
-			log.Printf("[%s%s] -> [%s]\n", r.Host, r.URL, proxy.Connect)
-
-			// Change request's host to destination host
-			r.Host = connectUrl.Host
-
-			// Forward request to destination
-			reverseProxy.ServeHTTP(w, r)
-		})
+		go func(c string, l string) {
+			// Handle requests on the url that the proxy should listen on
+			http.HandleFunc(l, func(w http.ResponseWriter, r *http.Request) {
+				// Parse the url that the proxy should forward request to
+				connectUrl, err := url.Parse(c)
+				if err != nil {
+					panic(err)
+				}
+				// Create reverse proxy from url
+				reverseProxy := httputil.NewSingleHostReverseProxy(connectUrl)
+				// Log request info
+				log.Printf("[%s] -> [%s]\n", r.URL, c)
+				// Change request's host to destination host
+				r.Host = connectUrl.Host
+				// Forward request to destination
+				reverseProxy.ServeHTTP(w, r)
+			})
+		}(proxy.Connect, proxy.Listen)
 	}
 
 	// Create http server and listen for requests
