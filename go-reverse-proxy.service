@@ -1,0 +1,14 @@
+[Unit]
+Description=go-reverse-proxy
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+PIDFile=/run/go-reverse-proxy.pid
+ExecStart=/root/go-reverse-proxy/go-reverse-proxy
+Restart=on-failure
+RestartSec=3s
+
+[Install]
+WantedBy=multi-user.target
