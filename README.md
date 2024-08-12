@@ -21,13 +21,16 @@ go-reverse-proxy.exe C:/Users/Alireza/
 ```json
 {
   "listen": ":80",
+  "https": true,
+  "cert": "/etc/letsencrypt/live/example.com/fullchain.pem",
+  "key": "/etc/letsencrypt/live/example.com/privkey.pem",
   "proxies": [
     {
-      "listen": "localhost/",
+      "listen": "/",
       "connect": "http://localhost:8080"
     },
     {
-      "listen": "api.localhost/",
+      "listen": "/api/",
       "connect": "http://localhost:5050"
     }
   ]
@@ -35,6 +38,12 @@ go-reverse-proxy.exe C:/Users/Alireza/
 ```
 
 `listen` : the address you want the reverse proxy to listen on
+
+`https` : whether or not to use SSL
+
+`cert` : certificate location
+
+`key` : key location
 
 `proxies` : array of objects containing listen address and the destination for each proxy
 
