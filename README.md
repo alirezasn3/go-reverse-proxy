@@ -4,16 +4,16 @@ This is a simple reverse proxy written in golang. Useful When you don't want to 
 
 ## How to use
 
-Create a `config.json` file in the same folder as the program.
+Build
+
+```
+go build
+```
+
+Create a `config.json` file in the same folder as the program and run the executable.
 
 ```
 go-reverse-proxy.exe
-```
-
-Alternatively, you can pass the path to the config file directory as the first command line argument.
-
-```
-go-reverse-proxy.exe C:/Users/Alireza/
 ```
 
 ## Sample config file
