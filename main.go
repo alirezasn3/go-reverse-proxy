@@ -7,6 +7,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path/filepath"
 )
 
 var config Config
@@ -18,21 +19,20 @@ type Proxy struct {
 
 type Config struct {
 	Listen  string  `json:"listen"`
+	HTTPS   bool    `json:"https"`
+	Cert    string  `json:"cert"`
+	Key     string  `json:"key"`
 	Proxies []Proxy `json:"proxies"`
 }
 
-// Load config file
 func init() {
-	// Default config file path is ./config.json
-	configPath := "config.json"
-
-	// Use the first command line argument as config file path if one is provided
-	if len(os.Args) > 1 {
-		configPath = os.Args[1] + configPath
-	}
-
 	// Read config file
-	bytes, err := os.ReadFile(configPath)
+	execPath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	path := filepath.Dir(execPath)
+	bytes, err := os.ReadFile(filepath.Join(path, "config.json"))
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,13 @@ func main() {
 	}
 
 	// Create http server and listen for requests
-	if err := http.ListenAndServe(config.Listen, nil); err != nil {
-		panic(err)
+	if config.HTTPS {
+		if err := http.ListenAndServeTLS(config.Listen, config.Cert, config.Key, nil); err != nil {
+			panic(err)
+		}
+	} else {
+		if err := http.ListenAndServe(config.Listen, nil); err != nil {
+			panic(err)
+		}
 	}
 }
