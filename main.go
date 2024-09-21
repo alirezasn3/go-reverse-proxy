@@ -2,12 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
+
+	goSystemd "github.com/alirezasn3/go-systemd"
 )
 
 var config Config
@@ -26,11 +30,33 @@ type Config struct {
 }
 
 func init() {
-	// Read config file
 	execPath, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
+
+	// check for install and uninstall commands
+	if slices.Contains(os.Args, "--install") {
+		err = goSystemd.CreateService(&goSystemd.Service{Name: "go-reverse-proxy", ExecStart: execPath, Restart: "on-failure", RestartSec: "3s"})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else {
+			fmt.Println("go-reverse-proxy service created")
+			os.Exit(0)
+		}
+	} else if slices.Contains(os.Args, "--uninstall") {
+		err := goSystemd.DeleteService("go-reverse-proxy")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else {
+			fmt.Println("go-reverse-proxy service deleted")
+			os.Exit(0)
+		}
+	}
+
+	// Read config file
 	path := filepath.Dir(execPath)
 	bytes, err := os.ReadFile(filepath.Join(path, "config.json"))
 	if err != nil {
